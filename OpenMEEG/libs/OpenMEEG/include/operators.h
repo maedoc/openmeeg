@@ -337,7 +337,7 @@ namespace OpenMEEG {
         // This function (NON OPTIMIZED VERSION) has the following arguments:
         //    the 2 interacting meshes
         //    the storage Matrix for the result
-        //    the coefficient to be appleid to each matrix element (depending on conductivities, ...)
+        //    the coefficient to be applied to each matrix element (depending on conductivities, ...)
         //    the gauss order parameter (for adaptive integration)
         //    an optional star parameter, which denotes the adjoint of the operator
 

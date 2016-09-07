@@ -105,13 +105,77 @@ namespace OpenMEEG {
         }
     }
 
+	void assemble_CM(const Geometry& geo, Matrix& mat, const std::string interface1, const std::string interface2, const unsigned gauss_order)
+	{
+	  // assembling Calderon matrix [-D S ] 
+	  //                            [-N D*]
+	  const Mesh mesh1=geo.mesh(interface1);
+	  const Mesh mesh2=geo.mesh(interface2);
+	  mat = Matrix(mesh1.nb_vertices()+mesh1.nb_triangles(),mesh2.nb_vertices()+mesh2.nb_triangles());
+	  mat.set(0.0);
+	  Matrix tmp_mat;
+	  tmp_mat = Matrix(geo.size());
+	  tmp_mat.set(0.0);
+	  double K = 1.0 / (4.0 * M_PI);
+	  
+    
+                   
+	  // check that interface1 and interface2 communicate, i.e they are used for the definition of a common domain
+	  const int orientation = geo.oriented(mesh1,mesh2); // equals  0, if they don't have any domains in common
+	  // equals  1, if they are both oriented toward the same domain
+	  // equals -1, if they are not
+	  if(orientation!=0){
+	    double Scoeff =   orientation * K;
+	    double Dcoeff = - orientation * geo.indicator(mesh1, mesh2) * K;
+	    double Ncoeff =   1.0;
+	    // Computing S block first because it's needed for the corresponding N block
+	    operatorS(mesh1, mesh2, tmp_mat, Scoeff, gauss_order); 
+	    // Computing D block
+	    operatorD(mesh1, mesh2, tmp_mat, Dcoeff, gauss_order, false);
+	    // Computing N block
+	    operatorN(mesh1, mesh2, tmp_mat, Ncoeff, gauss_order);
+	  }
+	  Mesh::const_iterator tit1=mesh1.begin();
+	  for(int i=0; i<mesh1.nb_triangles(); i++) {
+	     Mesh::const_iterator tit2=mesh2.begin();
+	    for(int j=0; j<mesh2.nb_triangles(); j++) {
+	      //   FILL IN mat WITH CORRESPONDING tmp_mat
+	      // mat(i,j) =
+		tit2 +=1;
+	    }
+	    Mesh::const_vertex_iterator vit2=mesh2.vertex_begin();
+	    for(int j=mesh2.nb_triangles(); j<mesh2.nb_triangles()+mesh2.nb_vertices(); j++) {
+	      //   FILL IN mat WITH CORRESPONDING tmp_mat
+	      // mat(i,j) =
+		vit2 +=1;
+	    }
+	    tit1 += 1;
+	  }
+	  Mesh::const_vertex_iterator vit1=mesh1.vertex_begin();
+	  for(int i=mesh1.nb_triangles(); i<mesh1.nb_triangles()+mesh1.nb_vertices(); i++) {
+	    Mesh::const_iterator tit2=mesh2.begin();
+	    for(int j=0; j<mesh2.nb_triangles(); j++) {
+	      //   FILL IN mat WITH CORRESPONDING tmp_mat
+	      // mat(i,j) =
+	      tit2 +=1;
+	    }
+	    Mesh::const_vertex_iterator vit2=mesh2.vertex_begin();
+	    for(int j=mesh2.nb_triangles(); j<mesh2.nb_triangles()+mesh2.nb_vertices(); j++) {
+	      //   FILL IN mat WITH CORRESPONDING tmp_mat
+	      // mat(i,j) =
+	       vit2 +=1;
+	    }
+	    vit1 +=1;
+	  }
+ 	}
+	
     void assemble_HM(const Geometry& geo, SymMatrix& mat, const unsigned gauss_order) 
     {
         mat = SymMatrix((geo.size()-geo.nb_current_barrier_triangles()));
         mat.set(0.0);
         double K = 1.0 / (4.0 * M_PI);
 
-        // We iterate over the meshes (or pair of domains) to fill the lower half of the HeadMat (since its symmetry)
+        // We iterate over the meshes (or pair of domains) to fill the lower half of the HeadMat (because of its symmetry)
         for(Geometry::const_iterator mit1 = geo.begin(); mit1 != geo.end(); ++mit1) {
             if(!mit1->isolated()){
                 for(Geometry::const_iterator mit2 = geo.begin(); (mit2 != (mit1+1)); ++mit2) {
@@ -457,6 +521,10 @@ namespace OpenMEEG {
         }
     }
 
+    CalderonMat::CalderonMat(const Geometry& geo,  const std::string interface1, const std::string interface2, const unsigned gauss_order)
+    {
+      assemble_CM(geo, *this, interface1, interface2, gauss_order);
+    }
     HeadMat::HeadMat(const Geometry& geo, const unsigned gauss_order)
     {
         assemble_HM(geo, *this, gauss_order);
