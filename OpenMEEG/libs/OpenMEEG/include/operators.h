@@ -54,20 +54,20 @@ knowledge of the CeCILL-B license and that you accept its terms.
 
 namespace OpenMEEG {
 
-    #ifdef USE_OMP
-    #undef OPTIMIZED_OPERATOR_D
-    #else
-    #define OPTIMIZED_OPERATOR_D
-    #endif
-
-    //#define ADAPT_LHS
-
-    // T can be a Matrix or SymMatrix
-    void operatorSinternal(const Mesh& , Matrix& , const Vertices&, const double& );
-    void operatorDinternal(const Mesh& , Matrix& , const Vertices&, const double& );
-    void operatorFerguson(const Vect3& , const Mesh& , Matrix& , const unsigned&, const double&);
-    void operatorDipolePotDer(const Vect3& , const Vect3& , const Mesh& , Vector&, const double&, const unsigned, const bool);
-    void operatorDipolePot   (const Vect3& , const Vect3& , const Mesh& , Vector&, const double&, const unsigned, const bool);
+#ifdef USE_OMP
+#undef OPTIMIZED_OPERATOR_D
+#else
+#define OPTIMIZED_OPERATOR_D
+#endif
+  
+  //#define ADAPT_LHS
+  
+  // T can be a Matrix or SymMatrix
+  void operatorSinternal(const Mesh& , Matrix& , const Vertices&, const double& );
+  void operatorDinternal(const Mesh& , Matrix& , const Vertices&, const double& );
+  void operatorFerguson(const Vect3& , const Mesh& , Matrix& , const unsigned&, const double&);
+  void operatorDipolePotDer(const Vect3& , const Vect3& , const Mesh& , Vector&, const double&, const unsigned, const bool);
+  void operatorDipolePot   (const Vect3& , const Vect3& , const Mesh& , Vector&, const double&, const unsigned, const bool);
 
     #ifndef OPTIMIZED_OPERATOR_D
     inline double _operatorD(const Triangle& T,const Vertex& V,const Mesh& m,const unsigned gauss_order) {
